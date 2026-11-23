@@ -15,6 +15,24 @@
 import pygame
 import random
 
+def atom_hitbox(atom, radius):
+    ''' (dict, int) -> pygame.Rect
+    
+    Returns a rectangle which serves as the hitbox for the atom.
+    The "hitbox" is an invisible rectangle inside the atom that detects when the atom and the beaker have collided.
+    The hitbox is smaller than the atom, so that the player has to be more precise in order to catch the atom.
+    '''
+    return pygame.Rect(atom["x"] - radius/2, atom["y"] - radius/2, radius, radius)
+
+# [UR] FIX: renamed from beaker_hitbox so the function and the variable in main() don't share a name (shadowing)
+def make_beaker_hitbox(beaker_x, beaker_y, beaker_width, opening_height):
+    ''' (float, float, float, float) -> pygame.Rect
+
+    Returns a rectangle which serves as the hitbox for the beaker.
+    Only the opening at the top of the beaker counts, so atoms have to fall in from above.
+    '''
+    return pygame.Rect(beaker_x, beaker_y, beaker_width, opening_height)
+
 def main():
 
     """ () -> NoneType
@@ -35,6 +53,7 @@ def main():
     beaker_speed = 420 # Sets the speed of the beaker to 420 pixels per second
     beaker_x = 400 - beaker_width/2 # Sets the initial x position of the beaker to the center of the screen
     beaker_y = 550 - beaker_height # Sets the initial y position of the beaker to the bottom of the screen
+    beaker_opening = 20 # [UR] FIX: only the top 20 pixels of the beaker count as the opening
 
     # Atom properties
     atoms = []           # each atom is a dict: {"symbol": "H", "x": 300, "y": -20}
@@ -42,6 +61,8 @@ def main():
     atom_speed = 120     # pixels per second
     spawn_timer = 1.0    # seconds until the next atom appears
     font = pygame.font.SysFont(None, 28)  # made once here, since making fonts every frame is slow
+
+    show_hitboxes = True # Draws the invisible hitboxes for testing; set to False before submitting
     
     while running: 
         # Main game Loop. Checks for user input, closes the window if user decides to exit, gives user options for resizing window, and draws the beaker on the screen.
@@ -82,6 +103,15 @@ def main():
         for atom in atoms:
             atom["y"] += atom_speed * dt
 
+        # [UR] FIX: the hitbox is made after the beaker moves, and stored in a variable whose name is different from the function's
+        beaker_hitbox = make_beaker_hitbox(beaker_x, beaker_y, beaker_width, beaker_opening)
+
+        # [UR] FIX: moved here so catches are checked after everything has moved; loop variable is "atom", not "atoms"
+        for atom in list(atoms): # loop over a copy, since we remove from the real list
+            if beaker_hitbox.colliderect(atom_hitbox(atom, atom_radius)): # Checks if the beaker hitbox and the atom hitbox are colliding
+                atoms.remove(atom) # If so, removes the atom from the list of atoms
+                print("Caught", atom["symbol"]) # Prints which atom was caught to the console
+
         # Remove atoms that fell off the bottom
         for atom in list(atoms):    # loop over a copy, since we remove from the real list
             if atom["y"] - atom_radius > 600:
@@ -96,6 +126,13 @@ def main():
             screen.blit(label, label.get_rect(center=(int(atom["x"]), int(atom["y"]))))
 
         pygame.draw.rect(screen, (255, 255, 255), (beaker_x, beaker_y, beaker_width, beaker_height)) # Draws a white rectangle representing the beaker at the specified position and size
+
+        # [UR] FIX: hitboxes are drawn after the beaker so they show on top instead of being covered
+        if show_hitboxes:
+            for atom in atoms:
+                pygame.draw.rect(screen, (255, 0, 0), atom_hitbox(atom, atom_radius), 1) # Draws a red rectangle representing the hitbox of the atom at the specified position and size
+            pygame.draw.rect(screen, (0, 255, 0), beaker_hitbox, 1) # Draws a green rectangle representing the hitbox of the beaker at the specified position and size
+
         pygame.display.flip() # Shows the finished frame on the window. Everything is drawn to a hidden screen first, so the player never sees a half-drawn frame.
         
 
