@@ -1,0 +1,3 @@
+# Files Git should ignore (made automatically when Python runs)
+__pycache__/
+*.pyc
