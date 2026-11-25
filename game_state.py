@@ -29,10 +29,11 @@ def new_game():
     """
     # Sets up the starting values of a new game in a dictionary.
     state = {
-        "score": 0,
-        "lives": 3,
-        "streak": 0,
-        "speed_step": 0,
+        "score": 0, # The score starts at 0.
+        "lives": 3, # The player starts with 3 lives.
+        "streak": 0, # The streak starts at 0.
+        "speed_step": 0, # The speed step starts at 0.
+        "next_life_at": 1000, # The player starts with 3 lives, and will gain an extra life at 1000 points.
     }
     return state # Returns the dictionary with the starting values of a new game.
 
@@ -63,3 +64,34 @@ def streak_multiplier(streak):
     else:
         return 4
 
+def add_points(state, points):
+    """ (dict, int) -> NoneType
+
+    Add the given points to the game state and update the score and lives accordingly.
+
+    >>> s = new_game()
+    >>> s["lives"] = 2
+    >>> add_points(s, 1000)
+    >>> s["score"], s["lives"]
+    (1000, 3)
+    """
+    state["score"] += points
+    while state["score"] >= state["next_life_at"]:
+        state["next_life_at"] += 1000
+        if state["lives"] < 3:
+            state["lives"] += 1
+
+def lose_life(state):
+    """ (dict) -> NoneType
+
+    Lose a life and reset the streak to 0.
+
+    >>> s = new_game()
+    >>> s["lives"] = 2
+    >>> lose_life(s)
+    >>> s["lives"], s["streak"]
+    (2, 0)
+    """
+    state["lives"] -= 1 # Lose a life.
+    state["streak"] = 0 # Reset the streak to 0 when a life is lost.
+    state["speed_step"] = max(0, state["speed_step"] - 2) # Decreases the speed by a step of 2. Max is used to keep speed step from going below 0.
