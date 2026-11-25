@@ -40,7 +40,10 @@ def new_game():
 
 def streak_multiplier(streak):
     """ (int) -> int
-    
+
+    Return the streak multiplier for the given streak. I based the streak multiplier off of a popular game called Guitar Hero.
+    The streak is the number of consecutive catches. The streak multiplier is 1 for a streak of 0-9, 2 for a streak of 10-19, 3 for a streak of 20-29, and 4 for a streak of 30 or more.
+
     >>> streak_multiplier(0)
     1
     >>> streak_multiplier(9)
@@ -51,9 +54,6 @@ def streak_multiplier(streak):
     3
     >>> streak_multiplier(500)
     4
-
-    Return the streak multiplier for the given streak. I based the streak multiplier off of a popular game called Guitar Hero.
-    The streak is the number of consecutive catches. The streak multiplier is 1 for a streak of 0-9, 2 for a streak of 10-19, 3 for a streak of 20-29, and 4 for a streak of 30 or more.
     """
     if streak < 10:
         return 1
@@ -84,10 +84,10 @@ def add_points(state, points):
 def lose_life(state):
     """ (dict) -> NoneType
 
-    Lose a life and reset the streak to 0.
+    Lose a life, reset the streak to 0, and slow the game down by 2 speed steps.
 
     >>> s = new_game()
-    >>> s["lives"] = 2
+    >>> s["streak"] = 12
     >>> lose_life(s)
     >>> s["lives"], s["streak"]
     (2, 0)
